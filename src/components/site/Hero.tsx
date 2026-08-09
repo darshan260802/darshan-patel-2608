@@ -24,7 +24,7 @@ export function Hero({ motionEnabled }: HeroProps) {
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink" />
 
-      {motionEnabled && <GradualBlur preset="bottom" strength={2.5} height="14rem" target="parent" />}
+      {motionEnabled && <GradualBlur preset="bottom" strength={2.5} height="14rem" target="parent" zIndex={1} />}
 
       <div className="relative z-10 px-6 pb-16 md:px-10 md:pb-24">
         <h1

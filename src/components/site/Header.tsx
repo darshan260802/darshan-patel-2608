@@ -19,7 +19,11 @@ export function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 z-30 flex w-full items-center justify-between border-b border-line bg-ink/80 px-6 py-4 backdrop-blur-sm md:px-10">
-        <a href="#top" aria-label="Darshan Patel — home" className="block transition-opacity hover:opacity-80">
+        <a
+          href="#top"
+          aria-label="Darshan Patel — home"
+          className="hidden transition-opacity hover:opacity-80 md:block"
+        >
           <img src="/logo1.png" alt="" className="h-8 w-8" width={32} height={32} />
         </a>
         <nav className="hidden items-center gap-8 md:flex">

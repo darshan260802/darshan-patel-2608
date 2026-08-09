@@ -9,7 +9,7 @@ export function useSmoothScroll(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
 
-    const lenis = new Lenis({ lerp: 0.09 });
+    const lenis = new Lenis({ lerp: 0.09, anchors: true });
     lenis.on('scroll', ScrollTrigger.update);
 
     const tick = (time: number) => lenis.raf(time * 1000);
