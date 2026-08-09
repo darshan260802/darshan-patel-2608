@@ -19,11 +19,8 @@ export function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 z-30 flex w-full items-center justify-between border-b border-line bg-ink/80 px-6 py-4 backdrop-blur-sm md:px-10">
-        <a
-          href="#top"
-          className="font-mono text-sm font-medium tracking-[0.1em] text-paper transition-colors hover:text-signal"
-        >
-          DP
+        <a href="#top" aria-label="Darshan Patel — home" className="block transition-opacity hover:opacity-80">
+          <img src="/logo1.png" alt="" className="h-8 w-8" width={32} height={32} />
         </a>
         <nav className="hidden items-center gap-8 md:flex">
           {navItems.map(item => (
@@ -55,6 +52,7 @@ export function Header() {
         <StaggeredMenu
           isFixed
           position="right"
+          logoUrl="/logo1.png"
           items={[...navItems]}
           socialItems={[
             { label: 'GitHub', link: contact.github },
