@@ -153,3 +153,47 @@ Currently the untouched Vite template: lowercase `portfolio` title, Vite favicon
 5. **Keyboard**: tab from the top through header → every section → contact links. Focus ring visible on black at every stop; the mobile menu must trap and restore focus.
 6. **Content check**: every metric on the page (98%, 34%, 8+, 4+ years, CGPA 8.29, all dates) matches the résumé exactly, and the phone number appears nowhere.
 7. Confirm the résumé download resolves at `/darshan-patel-resume.pdf` and both NPM links open the right packages.
+
+---
+
+## Addendum — résumé sync + connected project preview (2026-09-04)
+
+The site above was built from an earlier résumé (Angular-first, "Frontend Engineer", 4 yrs,
+EatCard/LMS as flagship projects). It was brought in sync with `New_resume_react.pdf`:
+
+- **Positioning moved React-first.** Hero role/focus, the readout strip, the summary
+  paragraph, the stack marquee, and `index.html` SEO/OG tags now read "Software Engineer,"
+  "3.5+" years, React/TypeScript/Node.js. The Anblicks bullets now credit React instead of
+  Angular for the dealership system, matching the résumé.
+- **Systems now shows Dev Presence and Claude Dash**, replacing EatCard and the LMS — the
+  résumé's own PROJECTS section swapped these. EatCard's work is still represented in the
+  WebOccult Track Record bullets.
+- **Every project and package link now opens a connected preview modal**
+  (`src/components/site/ProjectModal.tsx` + `BrowserChrome.tsx`) instead of a bare new-tab
+  anchor. The launch button carries a shared `layoutId` (via `motion`) with the modal's
+  frame, so the panel visibly grows out of the button that opened it. Framed as an
+  instrument-panel browser window — mono URL readout, load-progress hairline, desktop/
+  tablet/phone viewport toggles.
+  - `devpresence.dev` sends no frame-blocking headers, so it renders as a **live iframe**.
+  - `npmjs.com` (`X-Frame-Options: SAMEORIGIN`) and `github.com` (`frame-ancestors 'none'`)
+    both refuse to be framed — verified by inspecting response headers, not detected at
+    runtime (cross-origin frame refusal has no reliable JS signal). Those targets render a
+    **datasheet panel** instead: install command with copy-to-clipboard, the project's
+    bullets/stack, and outbound npm/GitHub links. Same chrome, same animation — never a
+    blank frame.
+  - Accessibility (focus trap, Escape, scroll lock, focus restoration) is hand-rolled in
+    `src/hooks/use-modal-behavior.ts` rather than wired through `@base-ui/react`'s Dialog —
+    getting Base UI's own mount/unmount transition lifecycle to cooperate with `motion`'s
+    shared-layout animation added more risk than it removed, and there was no other Base UI
+    usage in the codebase to stay consistent with.
+  - Launch links stay real `<a href>` elements with `preventDefault()` skipped on
+    cmd/ctrl/shift/middle-click, so the URLs remain crawlable, copyable, and open-in-new-tab
+    still works.
+- **Fixed a pre-existing bug found while verifying the modal on mobile**: `StaggeredMenu`'s
+  outer fixed wrapper (`src/components/StaggeredMenu.tsx`) spanned the full viewport without
+  `pointer-events: none`, silently swallowing every click below the `md` breakpoint — menu
+  open or closed. One-line fix; the inner elements already had their own `pointer-events-auto`
+  overrides, so the menu itself is unaffected.
+
+The design system, palette, and section composition below are otherwise unchanged — see
+`README.md` for the current page-composition table, which reflects this addendum.

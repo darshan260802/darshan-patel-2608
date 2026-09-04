@@ -25,8 +25,9 @@ in the hero that bends away from your cursor, because the whole subject of the s
 
 ## The idea
 
-The résumé behind this site is about **UI under load** — POS terminals mid-rush, dashboards
-syncing over sockets, a −98% re-render optimisation, published NPM packages. So the site is
+The résumé behind this site is about **real-time UI under load** — React and TypeScript
+depth, Node.js/NestJS-backed apps, a hosted product shipped end-to-end solo (Dev Presence),
+a local-first analytics dashboard published as an npm CLI (Claude Dash). So the site is
 designed to look like the instrument it describes.
 
 Three rules drove every decision:
@@ -34,7 +35,7 @@ Three rules drove every decision:
 1. **No accent colour.** Every other black portfolio reaches for acid green or vermilion.
    This one spends its boldness on typography and structure instead — seven greys, nothing else.
 2. **Structure encodes data.** No `01 / 02 / 03` decorative counters. Each section header carries
-   a real right-aligned readout — `SUMMARY → 4 YRS ACTIVE`, `SYSTEMS → 4 SHIPPED`, `STACK → 24 TOOLS`
+   a real right-aligned readout — `SUMMARY → 3.5+ YRS ACTIVE`, `SYSTEMS → 4 SHIPPED`, `STACK → 24 TOOLS`
    — and those numbers are counted from the content file, not typed in.
 3. **One loud element.** The `Threads` WebGL hero is the signature. Everything below it stays quiet.
 
@@ -79,7 +80,7 @@ All self-hosted through Fontsource. No network font requests at runtime.
 | 3 | **Stack marquee** | `ScrollVelocity` | Two counter-directional mono rows whose speed tracks scroll velocity |
 | 4 | **Summary** | `ScrollReveal` | Word-by-word reveal on the positioning statement, beside a mono fact column |
 | 5 | **Track record** | `AnimatedContent` | Dated vertical rail — Anblicks Inc. and WebOccult Technologies |
-| 6 | **Systems** | `SpotlightCard` · `CountUp` | Project panels; EatCard's metrics (8+ modules, −98% re-renders, −34% API calls) count up on view |
+| 6 | **Systems** | `SpotlightCard` · `CountUp` · `ProjectModal` | Project panels for Dev Presence and Claude Dash; each launch link opens a connected preview modal — an instrument-panel browser frame that scales out of the exact button clicked, live-embeds the site (`devpresence.dev`) or shows an install/link datasheet when the target can't be framed (npm, GitHub) |
 | 7 | **Stack** | `Magnet` | Hairline table in four groups, each item magnetised to the cursor |
 | 8 | **Contact** | `ShinyText` | The email set enormous in Archivo as the page's closing statement |
 
@@ -136,12 +137,15 @@ src/
 ├── content/
 │   └── profile.ts           # ← every string on the site lives here
 ├── components/
-│   ├── site/                # the eight page sections + SectionHeader
+│   ├── site/                # the eight page sections + SectionHeader + ProjectModal/BrowserChrome
 │   └── *.tsx                # vendored React Bits motion components
 ├── hooks/
 │   ├── use-smooth-scroll.ts # Lenis, bridged to GSAP's ticker
+│   ├── use-modal-behavior.ts # focus trap, Escape, scroll lock for ProjectModal
 │   └── use-reduced-motion.ts
-└── lib/utils.ts             # cn()
+└── lib/
+    ├── utils.ts              # cn()
+    └── preview.ts             # normalizes a project/package into the modal's PreviewTarget
 public/
 ├── darshan-patel-resume.pdf
 ├── og-image.png
@@ -191,7 +195,7 @@ reveals stay locked to the smoothed scroll position rather than the native one.
 
 ## Contact
 
-**Darshan Patel** — Frontend Engineer · Ahmedabad, IN
+**Darshan Patel** — Software Engineer · Ahmedabad, IN
 
 [Email](mailto:darshanpatel2608ce@gmail.com) ·
 [GitHub](https://github.com/darshan260802) ·
