@@ -4,9 +4,10 @@ import { identity, education } from '@/content/profile';
 
 interface SummaryProps {
   motionEnabled: boolean;
+  isMobile: boolean;
 }
 
-export function Summary({ motionEnabled }: SummaryProps) {
+export function Summary({ motionEnabled, isMobile }: SummaryProps) {
   return (
     <section className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
       <SectionHeader id="summary" label="Summary" readout={`${identity.yearsActive} YRS ACTIVE`} />
@@ -17,6 +18,7 @@ export function Summary({ motionEnabled }: SummaryProps) {
             baseOpacity={0.08}
             baseRotation={2}
             blurStrength={3}
+            enableBlur={!isMobile}
             containerClassName="max-w-3xl"
             textClassName="font-display text-2xl font-medium leading-[1.15] text-paper md:text-4xl"
           >

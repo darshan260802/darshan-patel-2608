@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-05T00:00:00.000Z",
+  "title": "Design System: Darshan Patel — Portfolio",
+  "extensions": {
+    "colorMeta": {
+      "signal": {
+        "role": "primary",
+        "displayName": "Signal White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": ["oklch(5% 0 0)", "oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(50% 0 0)", "oklch(65% 0 0)", "oklch(80% 0 0)", "oklch(95% 0 0)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "True Black",
+        "canonical": "oklch(0% 0 0)",
+        "tonalRamp": ["oklch(5% 0 0)", "oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(50% 0 0)", "oklch(65% 0 0)", "oklch(80% 0 0)", "oklch(95% 0 0)"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Panel Black",
+        "canonical": "oklch(4% 0 0)",
+        "tonalRamp": ["oklch(5% 0 0)", "oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(50% 0 0)", "oklch(65% 0 0)", "oklch(80% 0 0)", "oklch(95% 0 0)"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline Grey",
+        "canonical": "oklch(12% 0 0)",
+        "tonalRamp": ["oklch(5% 0 0)", "oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(50% 0 0)", "oklch(65% 0 0)", "oklch(80% 0 0)", "oklch(95% 0 0)"]
+      },
+      "line-hi": {
+        "role": "neutral",
+        "displayName": "Charged Hairline",
+        "canonical": "oklch(22% 0 0)",
+        "tonalRamp": ["oklch(5% 0 0)", "oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(50% 0 0)", "oklch(65% 0 0)", "oklch(80% 0 0)", "oklch(95% 0 0)"]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Instrument Grey",
+        "canonical": "oklch(49% 0 0)",
+        "tonalRamp": ["oklch(5% 0 0)", "oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(50% 0 0)", "oklch(65% 0 0)", "oklch(80% 0 0)", "oklch(95% 0 0)"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Soft Paper",
+        "canonical": "oklch(93% 0 0)",
+        "tonalRamp": ["oklch(5% 0 0)", "oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(50% 0 0)", "oklch(65% 0 0)", "oklch(80% 0 0)", "oklch(95% 0 0)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero name and the Contact section's closing email statement — the two loudest moments on the page; the only two instances using the expanded wdth 125 axis." },
+      "headline": { "displayName": "Headline", "purpose": "Section/card/company titles — Track Record entries, Project cards, the modal datasheet title. Archivo Bold at normal width." },
+      "lead": { "displayName": "Lead", "purpose": "The Summary section's positioning statement only — Archivo at body-adjacent weight (500), between Headline and Body in register." },
+      "body": { "displayName": "Body", "purpose": "Paragraph copy, bullet points, taglines, the hero role line." },
+      "label": { "displayName": "Label", "purpose": "Every mono/data instance: section header labels and readouts, nav items, dt/dd metadata, tags, links, footer colophon. Tracking scales 0.1em-0.18em with importance." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "spring-panel", "value": "spring(stiffness: 300, damping: 32, mass: 0.9)", "purpose": "ProjectModal's shared-element transition — the launch button visually scales into the opened preview frame via a shared layoutId." },
+      { "name": "ease-progress", "value": "ease-out 150ms", "purpose": "Header scroll-progress rule and BrowserChrome loading-rule width transitions." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The launch CTA on a project card (e.g. \"Open preview\"). Outlined at rest, fully inverts on hover/focus.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Open preview ↗</a>",
+      "css": ".ds-btn-primary { display: inline-block; border: 1px solid var(--line-hi, #333333); padding: 0.5rem 1rem; font-family: var(--font-mono, monospace); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--signal, #ffffff); background: transparent; text-decoration: none; transition: background 0.15s ease-out, color 0.15s ease-out; } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { background: var(--signal, #ffffff); color: var(--ink, #000000); outline: none; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "SpotlightCard: a flat panel whose only depth cue is a cursor-tracked radial glow on hover (approximated here as a fixed top-center glow).",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Dev Presence</h3><p class=\"ds-card-body\">Hosted portfolio builder — template gallery to a live, publicly deployed product.</p></div>",
+      "css": ".ds-card { position: relative; overflow: hidden; border: 1px solid var(--line, #1c1c1c); background: var(--surface, #0a0a0a); padding: 2rem; } .ds-card::before { content: \"\"; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.08), transparent 80%); opacity: 0; transition: opacity 0.5s ease-in-out; pointer-events: none; } .ds-card:hover::before, .ds-card:focus-within::before { opacity: 1; } .ds-card-title { font-family: var(--font-display, sans-serif); font-weight: 700; font-size: 1.5rem; color: var(--signal, #ffffff); margin: 0 0 0.5rem; } .ds-card-body { font-family: var(--font-sans, sans-serif); font-size: 0.875rem; color: var(--muted-ink, #737373); margin: 0; }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "A purely informational tech/stack tag. Never a filter or selection control.",
+      "html": "<span class=\"ds-chip\">TypeScript</span>",
+      "css": ".ds-chip { display: inline-block; border: 1px solid var(--line, #1c1c1c); padding: 0.375rem 0.75rem; font-family: var(--font-mono, monospace); font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-ink, #737373); transition: border-color 0.15s ease-out, color 0.15s ease-out; } .ds-chip:hover { border-color: var(--line-hi, #333333); color: var(--signal, #ffffff); }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Desktop header navigation item. No underline, no active-page indicator — the header's own scroll-progress rule carries that signal instead.",
+      "html": "<a class=\"ds-nav-link\" href=\"#summary\">Summary</a>",
+      "css": ".ds-nav-link { font-family: var(--font-mono, monospace); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted-ink, #737373); text-decoration: none; transition: color 0.15s ease-out; } .ds-nav-link:hover, .ds-nav-link:focus-visible { color: var(--signal, #ffffff); outline: none; }"
+    },
+    {
+      "name": "Section Header",
+      "kind": "custom",
+      "refersTo": "section-header",
+      "description": "Signature component: every section opens with a mono label plus a real right-aligned readout (never a decorative counter), divided by a hairline.",
+      "html": "<div class=\"ds-section-header\"><span class=\"ds-section-label\">Systems</span><span class=\"ds-section-readout\">4 SHIPPED</span></div>",
+      "css": ".ds-section-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line, #1c1c1c); padding-bottom: 1rem; } .ds-section-label { font-family: var(--font-mono, monospace); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--paper, #ededed); } .ds-section-readout { font-family: var(--font-mono, monospace); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted-ink, #737373); text-align: right; }"
+    },
+    {
+      "name": "Segmented Toggle",
+      "kind": "custom",
+      "refersTo": "toggle-segment",
+      "description": "The connected preview modal's desktop/tablet/phone viewport switcher. The active segment reuses the primary button's invert pattern as a persistent state.",
+      "html": "<div class=\"ds-toggle-group\" role=\"group\"><button class=\"ds-toggle-segment is-active\" type=\"button\">▭</button><button class=\"ds-toggle-segment\" type=\"button\">▯</button><button class=\"ds-toggle-segment\" type=\"button\">▮</button></div>",
+      "css": ".ds-toggle-group { display: inline-flex; border: 1px solid var(--line, #1c1c1c); } .ds-toggle-segment { border: none; background: transparent; padding: 0.375rem 0.625rem; font-family: var(--font-mono, monospace); font-size: 0.75rem; color: var(--muted-ink, #737373); cursor: pointer; transition: background 0.15s ease-out, color 0.15s ease-out; } .ds-toggle-segment:hover { color: var(--paper, #ededed); } .ds-toggle-segment.is-active { background: var(--signal, #ffffff); color: var(--ink, #000000); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Instrument Panel",
+    "overview": "The résumé behind this site is about real-time UI under load — socket-synced dashboards, forms that can't afford to stutter, systems other teams build on. So the site is built to look like the instrument it describes rather than describe it in prose: pitch black, hairline-ruled, mono-labelled, with a WebGL line field in the hero that visibly bends away from the cursor. The design's own construction is the strongest evidence on the page.\n\nThe one deliberate risk is total color abstinence. Every other black portfolio reaches for an accent — acid green, vermilion, an electric blue. This one spends its boldness on typography and structure instead: seven greys, zero hue, nothing else. Confirmed rejection: no accent color will ever be added; that constraint is the point, not a placeholder waiting to be filled in.\n\nDensity stays low and honest. Sections don't compete for attention — each one opens with a hairline rule and a mono label naming exactly what it is, carrying a real right-aligned readout instead of a decorative counter. The Threads hero is the system's one loud gesture; everything below it stays quiet by design.",
+    "keyCharacteristics": [
+      "Fully achromatic — seven greys, zero hue, no exceptions anywhere in the system.",
+      "Ruled, not rounded — 0px radius everywhere; 1px hairlines carry every division.",
+      "Every number is real — section readouts and animated metrics are counted from content, never decorative.",
+      "One loud element — the Threads WebGL field is the system's single expressive gesture.",
+      "Three faces, three jobs — Archivo for display, Instrument Sans for body, JetBrains Mono for data; never swapped."
+    ],
+    "rules": [
+      { "name": "The Zero-Hue Rule", "body": "All seven tokens are pure grayscale (0% saturation). No accent color exists anywhere in the system; boldness is spent on typography and structure instead of hue.", "section": "colors" },
+      { "name": "The Signal Rarity Rule", "body": "--signal appears only at genuine points of emphasis — headlines, the hover-inverted button/active toggle state, the focus ring, and the scroll-progress bar — never as a resting background or decoration. Its rarity is what makes it read as \"signal.\"", "section": "colors" },
+      { "name": "The Three Jobs Rule", "body": "Archivo is display only, Instrument Sans is body only, JetBrains Mono is data/label only. Never use Archivo for a paragraph or Mono for a headline — each face has exactly one job.", "section": "typography" },
+      { "name": "The Expanded-Is-Rare Rule", "body": "The signature wdth 125 expansion belongs to the two loudest display moments (hero name, closing email) alone. Every other Archivo instance — including all section and card headlines — renders at the font's normal width axis.", "section": "typography" },
+      { "name": "The Wider-Is-Louder Rule", "body": "Mono label tracking scales with importance: 0.18em for section headers and hero readouts (the loudest data), stepping down to 0.14em for navigation and the footer, and 0.1em for dense inline tags and links. Tracking is never uniform across all mono text.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. The only \"elevation\" response is the spotlight glow on hover/focus, never a box-shadow. Don't invoke the inherited --shadow-* scale without a deliberate decision to break flatness.", "section": "elevation" },
+      { "name": "The Ruled, Not Rounded Rule", "body": "0px radius is universal. A single rounded corner anywhere breaks the instrument-panel read.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do keep every hairline at exactly 1px in Hairline Grey at rest, stepping to Charged Hairline only on hover/active/focus — never introduce a third border weight or color.",
+      "Do reserve Signal White for genuine emphasis (headlines, the inverted hover/active state, the focus ring, the scroll-progress rule); see The Signal Rarity Rule.",
+      "Do keep every section-header readout and animated metric wired to real content in src/content/profile.ts — never a decorative counter or placeholder number.",
+      "Do scale mono-label tracking with importance per The Wider-Is-Louder Rule (0.18em section headers → 0.1em dense tags).",
+      "Do gate any new animation behind the existing motionEnabled prop so prefers-reduced-motion collapses it to an instant, static state."
+    ],
+    "donts": [
+      "Don't introduce any hue anywhere — no accent color, no tinted shadow, no colored focus ring. All seven tokens stay pure grayscale (The Zero-Hue Rule).",
+      "Don't add border-radius to anything. 0px is universal (The Ruled, Not Rounded Rule); a single rounded corner breaks the system.",
+      "Don't reach for the inherited --shadow-* scale to add depth to a new component; the shipped design is flat by construction (The Flat-By-Default Rule).",
+      "Don't use Archivo for body copy or Instrument Sans for headlines/labels — each face has exactly one job (The Three Jobs Rule).",
+      "Don't apply the expanded wdth 125 axis outside the hero name and closing email — it is reserved for the two loudest display moments only (The Expanded-Is-Rare Rule).",
+      "Don't invent a decorative \"01 / 02 / 03\" counter or icon system; the site already encodes real information in every header readout, and ornament for its own sake contradicts the whole thesis."
+    ]
+  }
+}

@@ -6,17 +6,30 @@ import { identity, readout } from '@/content/profile';
 
 interface HeroProps {
   motionEnabled: boolean;
+  isMobile: boolean;
 }
 
-export function Hero({ motionEnabled }: HeroProps) {
+export function Hero({ motionEnabled, isMobile }: HeroProps) {
   const nameParts = identity.name.toUpperCase().split(' ');
   const introDone = useRef(false);
 
   return (
-    <section id="top" className="relative flex h-[100dvh] w-full flex-col justify-end overflow-hidden bg-ink">
+    // `svh` (not `dvh`) — `dvh` tracks the mobile browser chrome collapsing
+    // as the page scrolls, which resizes this section mid-scroll and forces
+    // the WebGL canvas below to rebuild its render target while the user's
+    // finger is still moving. `svh` is the smallest stable viewport height,
+    // so it never moves once painted.
+    <section id="top" className="relative flex h-[100svh] w-full flex-col justify-end overflow-hidden bg-ink">
       <div className="absolute inset-0">
         {motionEnabled ? (
-          <Threads color={[1, 1, 1]} amplitude={1.1} distance={0.25} enableMouseInteraction />
+          <Threads
+            color={[1, 1, 1]}
+            amplitude={1.1}
+            distance={0.25}
+            enableMouseInteraction={!isMobile}
+            maxDpr={isMobile ? 1.5 : 2}
+            lineCount={isMobile ? 22 : 40}
+          />
         ) : (
           <div className="h-full w-full bg-[repeating-linear-gradient(90deg,var(--line)_0px,var(--line)_1px,transparent_1px,transparent_64px)]" />
         )}
@@ -24,9 +37,20 @@ export function Hero({ motionEnabled }: HeroProps) {
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink" />
 
-      {motionEnabled && <GradualBlur preset="bottom" strength={2.5} height="14rem" target="parent" zIndex={1} />}
+      {motionEnabled &&
+        (isMobile ? (
+          // Same visual read as the desktop blur stack — a soft fade into
+          // the page ground — without 5 stacked `backdrop-filter` layers
+          // sitting over a live WebGL canvas for the entire hero scroll.
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[14rem] bg-gradient-to-b from-transparent to-ink"
+          />
+        ) : (
+          <GradualBlur preset="bottom" strength={2.5} height="14rem" target="parent" zIndex={1} />
+        ))}
 
-      <div className="relative z-10 px-6 pb-16 md:px-10 md:pb-24">
+      <div className="relative z-10 px-6 pb-16 md:px-10 md:pb-24 max-md:translate-y-[-2.8rem]">
         <h1
           className="font-display font-bold uppercase leading-[0.85] text-signal"
           style={{

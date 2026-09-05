@@ -19,6 +19,20 @@ export function useModalBehavior(open: boolean, onClose: () => void, panelRef: R
 
     const root = document.getElementById('root');
     const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPaddingRight = document.body.style.paddingRight;
+
+    // Locking scroll removes the scrollbar, which widens the viewport and
+    // shifts every measured rect on the page. Motion's shared-layout
+    // transition (the panel's `layoutId`) measures its source and
+    // destination elements right as this effect runs, so an uncompensated
+    // shift here is what made the preview modal's "Establishing…" state
+    // intermittent — the fallback timer in ProjectModal is the structural
+    // fix, but padding out the lost scrollbar width keeps the page's total
+    // width constant, so the lock causes no reflow for Motion to race against.
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
     document.body.style.overflow = 'hidden';
     stopSmoothScroll();
     if (root) root.inert = true;
@@ -58,6 +72,7 @@ export function useModalBehavior(open: boolean, onClose: () => void, panelRef: R
     return () => {
       document.removeEventListener('keydown', onKeyDown, true);
       document.body.style.overflow = previousBodyOverflow;
+      document.body.style.paddingRight = previousBodyPaddingRight;
       startSmoothScroll();
       if (root) root.inert = false;
       restoreFocusTo.current?.focus({ preventScroll: true });

@@ -9,6 +9,7 @@ import { projectToPreviewTarget, packageToPreviewTarget, type PreviewTarget } fr
 
 interface SystemsProps {
   motionEnabled: boolean;
+  isMobile: boolean;
 }
 
 function shouldOpenInline(e: MouseEvent) {
@@ -18,10 +19,12 @@ function shouldOpenInline(e: MouseEvent) {
 function ProjectCard({
   project,
   motionEnabled,
+  useLayoutTransition,
   onLaunch,
 }: {
   project: ProjectEntry;
   motionEnabled: boolean;
+  useLayoutTransition: boolean;
   onLaunch: (e: MouseEvent<HTMLAnchorElement>, project: ProjectEntry) => void;
 }) {
   const [primary, ...secondary] = project.links;
@@ -80,7 +83,7 @@ function ProjectCard({
           <motion.a
             href={primary.href}
             onClick={e => onLaunch(e, project)}
-            layoutId={motionEnabled ? `panel-${project.id}` : undefined}
+            layoutId={useLayoutTransition ? `panel-${project.id}` : undefined}
             className="border border-line-hi px-4 py-2 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-signal transition-colors hover:bg-signal hover:text-ink"
           >
             {launchLabel} ↗
@@ -102,8 +105,13 @@ function ProjectCard({
   );
 }
 
-export function Systems({ motionEnabled }: SystemsProps) {
+export function Systems({ motionEnabled, isMobile }: SystemsProps) {
   const [target, setTarget] = useState<PreviewTarget | null>(null);
+  // The shared-layout scale-out (small button → fullscreen panel) is the
+  // surface where the modal-open race lived, and it's an expensive layout
+  // animation to run on a touch viewport regardless. Skip it on mobile; the
+  // modal still opens via the plain fade/scale fallback.
+  const useLayoutTransition = motionEnabled && !isMobile;
 
   const openProject = (e: MouseEvent<HTMLAnchorElement>, project: ProjectEntry) => {
     if (!shouldOpenInline(e)) return;
@@ -123,7 +131,13 @@ export function Systems({ motionEnabled }: SystemsProps) {
 
       <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {projects.map(project => (
-          <ProjectCard key={project.id} project={project} motionEnabled={motionEnabled} onLaunch={openProject} />
+          <ProjectCard
+            key={project.id}
+            project={project}
+            motionEnabled={motionEnabled}
+            useLayoutTransition={useLayoutTransition}
+            onLaunch={openProject}
+          />
         ))}
       </div>
 
@@ -137,7 +151,7 @@ export function Systems({ motionEnabled }: SystemsProps) {
               <motion.a
                 href={pkg.href}
                 onClick={e => openPackage(e, pkg)}
-                layoutId={motionEnabled ? `panel-${pkg.name}` : undefined}
+                layoutId={useLayoutTransition ? `panel-${pkg.name}` : undefined}
                 className="font-mono text-sm text-paper underline decoration-line-hi decoration-1 underline-offset-4 transition-colors hover:text-signal hover:decoration-signal"
               >
                 {pkg.name} ↗
@@ -147,7 +161,7 @@ export function Systems({ motionEnabled }: SystemsProps) {
         </ul>
       </div>
 
-      <ProjectModal target={target} motionEnabled={motionEnabled} onClose={() => setTarget(null)} />
+      <ProjectModal target={target} useLayoutTransition={useLayoutTransition} onClose={() => setTarget(null)} />
     </section>
   );
 }

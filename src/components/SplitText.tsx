@@ -120,6 +120,11 @@ const SplitText: React.FC<SplitTextProps> = ({
               onComplete: () => {
                 animationCompletedRef.current = true;
                 onCompleteRef.current?.();
+                // The entry animation is a one-shot (`once: true` above) —
+                // release the layer promotion once it's done instead of
+                // leaving every character promoted for the rest of the
+                // page's life.
+                gsap.set(targets, { clearProps: 'willChange' });
               },
               willChange: 'transform, opacity',
               force3D: true
@@ -156,10 +161,12 @@ const SplitText: React.FC<SplitTextProps> = ({
   );
 
   const renderTag = () => {
+    // No `willChange` here — this element itself is never animated (only
+    // its split children are, via the tween above), so promoting it was
+    // pure permanent cost with no benefit.
     const style: React.CSSProperties = {
       textAlign,
-      wordWrap: 'break-word',
-      willChange: 'transform, opacity'
+      wordWrap: 'break-word'
     };
     const classes = `split-parent overflow-hidden inline-block whitespace-normal ${className}`;
     const Tag = (tag || 'p') as React.ElementType;

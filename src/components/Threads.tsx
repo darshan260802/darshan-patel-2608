@@ -6,6 +6,12 @@ interface ThreadsProps {
   amplitude?: number;
   distance?: number;
   enableMouseInteraction?: boolean;
+  /** Caps `renderer.dpr` before the internal MAX_RENDER_DIM downscale below. */
+  maxDpr?: number;
+  /** Baked into the fragment shader at compile time (see `buildFragmentShader`)
+   * — the per-pixel cost of this shader scales linearly with it, so it's the
+   * single highest-leverage knob for cheapening the effect on lower-power GPUs. */
+  lineCount?: number;
 }
 
 const vertexShader = `
@@ -18,7 +24,12 @@ void main() {
 }
 `;
 
-const fragmentShader = `
+const DEFAULT_LINE_COUNT = 40;
+
+// `u_line_count` bounds the fragment shader's per-pixel loop, so it must stay
+// a compile-time constant rather than a uniform — templated in JS instead.
+function buildFragmentShader(lineCount: number) {
+  return `
 precision highp float;
 
 uniform float iTime;
@@ -30,7 +41,7 @@ uniform vec2 uMouse;
 
 #define PI 3.1415926538
 
-const int u_line_count = 40;
+const int u_line_count = ${Math.max(1, Math.round(lineCount))};
 const float u_line_width = 7.0;
 const float u_line_blur = 10.0;
 
@@ -124,12 +135,15 @@ void main() {
     mainImage(gl_FragColor, gl_FragCoord.xy);
 }
 `;
+}
 
 const Threads: React.FC<ThreadsProps> = ({
   color = [1, 1, 1],
   amplitude = 1,
   distance = 0,
   enableMouseInteraction = false,
+  maxDpr = 2,
+  lineCount = DEFAULT_LINE_COUNT,
   ...rest
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,7 +168,7 @@ const Threads: React.FC<ThreadsProps> = ({
     const geometry = new Triangle(gl);
     const program = new Program(gl, {
       vertex: vertexShader,
-      fragment: fragmentShader,
+      fragment: buildFragmentShader(lineCount),
       uniforms: {
         iTime: { value: 0 },
         iResolution: {
@@ -174,9 +188,18 @@ const Threads: React.FC<ThreadsProps> = ({
     // resolution to keep large / high-DPI screens smooth; the effect is soft
     // enough that the downscale is imperceptible.
     const MAX_RENDER_DIM = 1920;
+    let lastWidth = 0;
+    let lastHeight = 0;
     function resize() {
       const { clientWidth, clientHeight } = container;
-      const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Sub-pixel/rounding-only changes (and, belt-and-suspenders, the kind of
+      // small delta a mobile browser's URL-bar collapse can still produce)
+      // aren't worth tearing down and recompiling the render target for.
+      if (Math.abs(clientWidth - lastWidth) < 2 && Math.abs(clientHeight - lastHeight) < 2) return;
+      lastWidth = clientWidth;
+      lastHeight = clientHeight;
+
+      const baseDpr = Math.min(window.devicePixelRatio || 1, maxDpr);
       const longestSide = Math.max(clientWidth, clientHeight) * baseDpr;
       const dpr = longestSide > MAX_RENDER_DIM ? (baseDpr * MAX_RENDER_DIM) / longestSide : baseDpr;
       renderer.dpr = dpr;
@@ -207,18 +230,34 @@ const Threads: React.FC<ThreadsProps> = ({
     container.addEventListener('mouseleave', handleMouseLeave);
 
     // Only animate while the canvas is on screen and the tab is visible, so the
-    // shader never burns GPU/CPU for something the user can't see.
+    // shader never burns GPU/CPU for something the user can't see. The rAF
+    // loop itself stops (not just its render work) while either is false —
+    // it only re-schedules once intersection or visibility comes back.
     let isVisible = true;
+    let rafScheduled = false;
+
+    function scheduleUpdate() {
+      if (rafScheduled) return;
+      rafScheduled = true;
+      animationFrameId.current = requestAnimationFrame(update);
+    }
+
     const intersectionObserver = new IntersectionObserver(
       entries => {
         isVisible = entries[0].isIntersecting;
+        if (isVisible && !document.hidden) scheduleUpdate();
       },
       { threshold: 0 }
     );
     intersectionObserver.observe(container);
 
+    function handleVisibilityChange() {
+      if (!document.hidden && isVisible) scheduleUpdate();
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     function update(t: number) {
-      animationFrameId.current = requestAnimationFrame(update);
+      rafScheduled = false;
       if (!isVisible || document.hidden) return;
 
       const { color, amplitude, distance, enableMouseInteraction } = propsRef.current;
@@ -240,20 +279,25 @@ const Threads: React.FC<ThreadsProps> = ({
       program.uniforms.iTime.value = t * 0.001;
 
       renderer.render({ scene: mesh });
+      scheduleUpdate();
     }
-    animationFrameId.current = requestAnimationFrame(update);
+    scheduleUpdate();
 
     return () => {
       if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', resize);
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseleave', handleMouseLeave);
       if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuild only for
+    // props that change the compiled shader/render target; color/amplitude/
+    // distance/enableMouseInteraction flow through propsRef without a rebuild.
+  }, [lineCount, maxDpr]);
 
   return <div ref={containerRef} className="w-full h-full relative" {...rest} />;
 };

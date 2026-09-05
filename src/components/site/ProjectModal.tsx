@@ -1,4 +1,4 @@
-import { useRef, useState, useId } from 'react';
+import { useEffect, useRef, useState, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Copy, Check } from 'lucide-react';
@@ -9,9 +9,22 @@ import type { ProjectLink } from '@/content/profile';
 
 interface ProjectModalProps {
   target: PreviewTarget | null;
-  motionEnabled: boolean;
+  /** Gates the shared-layout (`layoutId`) scale-out transition only — every
+   * other affordance in this modal (focus trap, Escape, fallback panels)
+   * works identically whether this is true or false. */
+  useLayoutTransition: boolean;
   onClose: () => void;
 }
+
+// Just past the panel spring's settle time (stiffness 300, damping 32, mass
+// 0.9) — the ceiling on how long the "Establishing…" state may ever show
+// once the layout transition genuinely runs.
+const LAYOUT_SETTLE_FALLBACK_MS = 420;
+
+// If the embedded site hasn't fired `onLoad` by here, either it refused to
+// be framed (X-Frame-Options/CSP) or it's genuinely too slow — either way,
+// stop showing a spinner and offer the real link instead.
+const IFRAME_LOAD_TIMEOUT_MS = 8000;
 
 const VIEWPORT_WIDTH: Record<Viewport, string> = {
   desktop: '100%',
@@ -126,11 +139,36 @@ function EmbedBody({
   target,
   onLoaded,
   ready,
+  failed,
 }: {
   target: Extract<PreviewTarget, { mode: 'embed' }>;
   onLoaded: () => void;
   ready: boolean;
+  failed: boolean;
 }) {
+  if (failed) {
+    return (
+      <div className="flex h-full flex-col">
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+          <span className="font-mono text-[0.6875rem] uppercase tracking-[0.18em] text-muted-ink">
+            Preview didn't load
+          </span>
+          <a
+            href={target.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border border-line-hi px-4 py-2 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-signal transition-colors hover:bg-signal hover:text-ink"
+          >
+            Open {target.url.replace(/^https?:\/\//, '')} ↗
+          </a>
+        </div>
+        <div className="shrink-0 border-t border-line px-4 py-3 md:px-5">
+          <LinkRow links={target.links} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="relative flex-1">
@@ -163,21 +201,41 @@ function EmbedBody({
   );
 }
 
-export function ProjectModal({ target, motionEnabled, onClose }: ProjectModalProps) {
+export function ProjectModal({ target, useLayoutTransition, onClose }: ProjectModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [viewport, setViewport] = useState<Viewport>('desktop');
   const [iframeReady, setIframeReady] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeFailed, setIframeFailed] = useState(false);
   const titleId = useId();
 
   const open = target !== null;
   useModalBehavior(open, onClose, panelRef);
 
+  // `onLayoutAnimationComplete` below is a fast path, not a dependency: if
+  // Motion's shared-layout transition doesn't fire — a click mid-scroll, a
+  // measurement disrupted by the scroll-lock reflow, or simply
+  // `useLayoutTransition` being false — this fallback still opens the panel.
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => setIframeReady(true), LAYOUT_SETTLE_FALLBACK_MS);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+
+  // If the embed hasn't loaded within a generous window, stop showing
+  // "Establishing…" forever and offer the real link instead.
+  useEffect(() => {
+    if (!open || target?.mode !== 'embed' || iframeLoaded) return;
+    const timer = window.setTimeout(() => setIframeFailed(true), IFRAME_LOAD_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [open, target, iframeLoaded]);
+
   const handleExitComplete = () => {
     setViewport('desktop');
     setIframeReady(false);
     setIframeLoaded(false);
+    setIframeFailed(false);
   };
 
   return createPortal(
@@ -202,13 +260,13 @@ export function ProjectModal({ target, motionEnabled, onClose }: ProjectModalPro
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}
-            layoutId={motionEnabled ? `panel-${target.id}` : undefined}
-            initial={motionEnabled ? undefined : { opacity: 0, scale: 0.98 }}
-            animate={motionEnabled ? undefined : { opacity: 1, scale: 1 }}
-            exit={motionEnabled ? undefined : { opacity: 0, scale: 0.98 }}
+            layoutId={useLayoutTransition ? `panel-${target.id}` : undefined}
+            initial={useLayoutTransition ? undefined : { opacity: 0, scale: 0.98 }}
+            animate={useLayoutTransition ? undefined : { opacity: 1, scale: 1 }}
+            exit={useLayoutTransition ? undefined : { opacity: 0, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 300, damping: 32, mass: 0.9 }}
             onLayoutAnimationComplete={() => setIframeReady(true)}
-            style={!motionEnabled ? { width: 'min(100%, 72rem)', height: 'min(100%, 46rem)' } : undefined}
+            style={!useLayoutTransition ? { width: 'min(100%, 72rem)', height: 'min(100%, 46rem)' } : undefined}
             className="relative z-10 h-full w-full outline-none md:h-[46rem] md:max-h-[calc(100vh-4rem)] md:w-[min(100%,72rem)]"
           >
             <BrowserChrome
@@ -224,7 +282,7 @@ export function ProjectModal({ target, motionEnabled, onClose }: ProjectModalPro
               {target.mode === 'embed' ? (
                 <div className="flex h-full items-stretch justify-center bg-ink">
                   <div
-                    className="flex h-full min-w-0 flex-col border-line transition-[width] duration-200"
+                    className="flex h-full min-w-0 flex-col border-line"
                     style={{
                       width: VIEWPORT_WIDTH[viewport],
                       borderLeftWidth: viewport === 'desktop' ? 0 : 1,
@@ -233,7 +291,8 @@ export function ProjectModal({ target, motionEnabled, onClose }: ProjectModalPro
                   >
                     <EmbedBody
                       target={target}
-                      ready={iframeReady || !motionEnabled}
+                      ready={iframeReady || !useLayoutTransition}
+                      failed={iframeFailed}
                       onLoaded={() => setIframeLoaded(true)}
                     />
                   </div>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { motion, useMotionValue, useAnimationFrame, useTransform } from 'motion/react';
+import { motion, useMotionValue, useAnimationFrame, useTransform, useInView } from 'motion/react';
 
 interface ShinyTextProps {
   text: string;
@@ -33,12 +33,17 @@ const ShinyText: React.FC<ShinyTextProps> = ({
   const elapsedRef = useRef(0);
   const lastTimeRef = useRef<number | null>(null);
   const directionRef = useRef(direction === 'left' ? 1 : -1);
+  const spanRef = useRef<HTMLSpanElement>(null);
+  // Without this, the shine keeps animating (and Motion keeps ticking this
+  // component every frame) even while the Contact section — the very
+  // bottom of the page — is nowhere near the viewport.
+  const isInView = useInView(spanRef, { margin: '200px' });
 
   const animationDuration = speed * 1000;
   const delayDuration = delay * 1000;
 
   useAnimationFrame(time => {
-    if (disabled || isPaused) {
+    if (disabled || isPaused || !isInView) {
       lastTimeRef.current = null;
       return;
     }
@@ -118,6 +123,7 @@ const ShinyText: React.FC<ShinyTextProps> = ({
 
   return (
     <motion.span
+      ref={spanRef}
       className={`inline-block ${className}`}
       style={{ ...gradientStyle, backgroundPosition }}
       onMouseEnter={handleMouseEnter}

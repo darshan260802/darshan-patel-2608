@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect, useState } from 'react';
+import React, { useRef, useLayoutEffect, useEffect, useState } from 'react';
 import {
   motion,
   useScroll,
@@ -6,7 +6,8 @@ import {
   useTransform,
   useMotionValue,
   useVelocity,
-  useAnimationFrame
+  useAnimationFrame,
+  useInView
 } from 'motion/react';
 
 interface VelocityMapping {
@@ -107,6 +108,16 @@ export const ScrollVelocity: React.FC<ScrollVelocityProps> = ({
     const copyRef = useRef<HTMLSpanElement>(null);
     const copyWidth = useElementWidth(copyRef);
 
+    // This marquee has no natural "settle" point — without a guard, the
+    // useAnimationFrame loop below runs for the page's entire lifetime,
+    // including while the section is nowhere near the viewport.
+    const containerRef = useRef<HTMLDivElement>(null);
+    const isInView = useInView(containerRef, { margin: '200px' });
+    const isInViewRef = useRef(isInView);
+    useEffect(() => {
+      isInViewRef.current = isInView;
+    }, [isInView]);
+
     function wrap(min: number, max: number, v: number): number {
       const range = max - min;
       const mod = (((v - min) % range) + range) % range;
@@ -120,6 +131,8 @@ export const ScrollVelocity: React.FC<ScrollVelocityProps> = ({
 
     const directionFactor = useRef<number>(1);
     useAnimationFrame((_t, delta) => {
+      if (!isInViewRef.current) return;
+
       let moveBy = directionFactor.current * baseVelocity * (delta / 1000);
 
       if (velocityFactor.get() < 0) {
@@ -142,9 +155,9 @@ export const ScrollVelocity: React.FC<ScrollVelocityProps> = ({
     }
 
     return (
-      <div className={`${parallaxClassName} relative overflow-hidden`} style={parallaxStyle}>
+      <div ref={containerRef} className={`${parallaxClassName} relative overflow-hidden`} style={parallaxStyle}>
         <motion.div
-          className={`${scrollerClassName} flex whitespace-nowrap text-center font-sans text-4xl font-bold tracking-[-0.02em] drop-shadow md:text-[5rem] md:leading-[5rem]`}
+          className={`${scrollerClassName} flex whitespace-nowrap text-center font-sans text-4xl font-bold tracking-[-0.02em] md:text-[5rem] md:leading-[5rem] md:drop-shadow`}
           style={{ x, ...scrollerStyle }}
         >
           {spans}
